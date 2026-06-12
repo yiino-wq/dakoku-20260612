@@ -84,7 +84,7 @@
   .status .dot {
     width: 9px; height: 9px; border-radius: 50%;
     background: var(--muted);
-  }
+  } 
   .status.working { color: var(--in); }
   .status.working .dot { background: var(--in); box-shadow: 0 0 8px var(--in); }
   .status.done { color: var(--accent); }
@@ -95,25 +95,58 @@
   .status.none .dot { background: #dc2626; }
 
   .buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
+    display: block;
     margin: 22px 0;
+  }
+  .buttons .primary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+  .buttons .more {
+    margin-top: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  /* hidden 属性で制御（JS が属性を付け外しするため） */
+  .more[hidden] { display: none; }
+  .more-toggle {
+    margin-top: 12px;
+    width: 100%;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
   }
   button.punch {
     border: none;
-    border-radius: 16px;
-    padding: 20px 8px;
-    font-size: 1.1rem;
+    border-radius: 18px;
+    padding: 44px 20px;
+    font-size: 1.9rem;
     font-weight: 700;
     color: #fff;
     cursor: pointer;
     transition: transform 0.08s ease, opacity 0.2s ease, filter 0.2s ease;
   }
+  /* ラベルが改行されないようにする */
+  button.punch { white-space: nowrap; }
   button.punch .sub { display: block; font-size: 0.66rem; font-weight: 500; opacity: 0.85; margin-top: 4px; letter-spacing: 0.05em; }
   button.in  { background: linear-gradient(160deg, var(--in), var(--in-dark)); }
   button.brk { background: linear-gradient(160deg, #6366f1, #4338ca); }
   button.out { background: linear-gradient(160deg, var(--out), var(--out-dark)); }
+  /* 追加ボタン色 */
+  #btnOuting { background: linear-gradient(160deg, #f59e0b, #d97706); }
+  #btnReturn { background: linear-gradient(160deg, #10b981, #047857); }
+  #btnDirectGo { background: linear-gradient(160deg, #06b6d4, #0ea5a4); }
+  #btnDirectHome { background: linear-gradient(160deg, #ef4444, #991b1b); }
+  #btnLeave { background: linear-gradient(160deg, #8b5cf6, #6d28d9); }
+  #btnLeaveAM { background: linear-gradient(160deg, #f97316, #fb923c); }
+  #btnLeavePM { background: linear-gradient(160deg, #ef4444, #fb7185); }
+  #btnWFH { background: linear-gradient(160deg, #06b6d4, #1e3a8a); }
   button.punch:active:not(:disabled) { transform: scale(0.97); }
   button.punch:disabled { opacity: 0.32; cursor: not-allowed; filter: grayscale(0.4); }
 
@@ -223,9 +256,28 @@
       <div class="status" id="status"><span class="dot"></span><span id="statusText">未出勤</span></div>
 
       <div class="buttons">
-        <button class="punch in"  id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
-        <button class="punch brk" id="btnBreak"><span id="brkLabel">休憩開始</span><span class="sub" id="brkSub">BREAK START</span></button>
-        <button class="punch out" id="btnOut">退勤<span class="sub">CLOCK OUT</span></button>
+        <div class="primary">
+          <button class="punch in"  id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
+          <button class="punch brk" id="btnBreak"><span id="brkLabel">休憩開始</span><span class="sub" id="brkSub">BREAK START</span></button>
+          <button class="punch out" id="btnOut">退勤<span class="sub">CLOCK OUT</span></button>
+        </div>
+
+        <div class="primary" style="margin-top:12px;">
+          <button class="punch" id="btnOuting">外出<span class="sub">GO OUT</span></button>
+          <button class="punch" id="btnDirectGo">直行<span class="sub">DIRECT GO</span></button>
+          <div></div>
+        </div>
+
+        <button class="more-toggle" id="btnMore">その他を表示</button>
+
+        <div class="more" id="morePanel" hidden>
+          <button class="punch" id="btnReturn">帰社<span class="sub">RETURN</span></button>
+          <button class="punch" id="btnDirectHome">直帰<span class="sub">DIRECT HOME</span></button>
+          <button class="punch" id="btnWFH">在宅<span class="sub">WFH</span></button>
+          <button class="punch" id="btnLeave">休暇<span class="sub">LEAVE</span></button>
+          <button class="punch" id="btnLeaveAM">AM休暇<span class="sub">AM LEAVE</span></button>
+          <button class="punch" id="btnLeavePM">PM休暇<span class="sub">PM LEAVE</span></button>
+        </div>
       </div>
 
       <div class="today">
@@ -241,7 +293,7 @@
       <h2>直近の記録 <button class="clear" id="btnClear">全削除</button></h2>
       <table>
         <thead>
-          <tr><th>日付</th><th>出勤</th><th>退勤</th><th>休憩</th><th>勤務</th><th>残業</th></tr>
+          <tr><th>日付</th><th>出勤</th><th>退勤</th><th>休憩</th><th>勤務</th><th>残業</th><th>状態</th><th>タグ</th></tr>
         </thead>
         <tbody id="historyBody"></tbody>
       </table>
@@ -372,6 +424,14 @@
     brkSub: document.getElementById("brkSub"),
     todayBreak: document.getElementById("todayBreak"),
     todayOvertime: document.getElementById("todayOvertime"),
+    btnOuting: document.getElementById("btnOuting"),
+    btnReturn: document.getElementById("btnReturn"),
+    btnDirectGo: document.getElementById("btnDirectGo"),
+    btnDirectHome: document.getElementById("btnDirectHome"),
+    btnLeave: document.getElementById("btnLeave"),
+    btnLeaveAM: document.getElementById("btnLeaveAM"),
+    btnLeavePM: document.getElementById("btnLeavePM"),
+    btnWFH: document.getElementById("btnWFH"),
     lockOverlay: document.getElementById("lockOverlay"),
     lockHint: document.getElementById("lockHint"),
     btnResetAuth: document.getElementById("btnResetAuth"),
@@ -439,9 +499,62 @@
     // 退勤は「最新の出勤レコード」が存在し休憩中でない限り押下可 (翌日の出勤前は何度でも上書き可)
     const latest = latestRecord();
     const latestOnBreak = latest ? isOnBreak(latest.rec) : false;
-    el.btnIn.disabled = hasIn;
+    // 基本ボタン制御
+    // 出勤ボタンは「出勤済みかつ未退勤」の場合のみ無効にする
+    el.btnIn.disabled = hasIn && !hasOut;
     el.btnBreak.disabled = !hasIn || hasOut;
     el.btnOut.disabled = !latest || latestOnBreak;
+
+    // 新しいボタンの有効/無効制御
+    const enabledAfterIn = hasIn && !hasOut;
+    // 外出/帰社 はトグル状態をレコードのフラグで保持
+    const outingActive = !!(rec && rec.outing);
+    const directActive = !!(rec && rec.direct);
+
+    // 休憩中は他のボタンをすべて無効化（休憩の開始/終了のみ有効）
+    if (onBreak) {
+      el.btnIn.disabled = true;
+      el.btnBreak.disabled = false; // 休憩終了用に有効
+      el.btnOut.disabled = true;
+      // 休憩中は外出/直行ペアは非表示にする
+      el.btnOuting.disabled = true; el.btnOuting.hidden = true;
+      el.btnReturn.disabled = true; el.btnReturn.hidden = true;
+      el.btnDirectGo.disabled = true; el.btnDirectGo.hidden = true;
+      el.btnDirectHome.disabled = true; el.btnDirectHome.hidden = true;
+      el.btnWFH.disabled = true;
+      el.btnLeave.disabled = true;
+      el.btnLeaveAM.disabled = true;
+      el.btnLeavePM.disabled = true;
+    } else {
+      // 通常時の振る舞い
+      // 外出/帰社は一つのボタンのように振る舞う（片方を表示、片方を非表示）
+      if (!enabledAfterIn) {
+        el.btnOuting.hidden = true; el.btnReturn.hidden = true;
+      } else if (outingActive) {
+        el.btnOuting.hidden = true; el.btnReturn.hidden = false;
+        el.btnOuting.disabled = true; el.btnReturn.disabled = false;
+      } else {
+        el.btnOuting.hidden = false; el.btnReturn.hidden = true;
+        el.btnOuting.disabled = false; el.btnReturn.disabled = true;
+      }
+      // 直行/直帰も同様
+      if (!enabledAfterIn) {
+        el.btnDirectGo.hidden = true; el.btnDirectHome.hidden = true;
+      } else if (directActive) {
+        el.btnDirectGo.hidden = true; el.btnDirectHome.hidden = false;
+        el.btnDirectGo.disabled = true; el.btnDirectHome.disabled = false;
+      } else {
+        el.btnDirectGo.hidden = false; el.btnDirectHome.hidden = true;
+        el.btnDirectGo.disabled = false; el.btnDirectHome.disabled = true;
+      }
+      el.btnWFH.disabled = !enabledAfterIn;
+      // 休暇系は「退勤後」または「未出勤（記録なし）」で有効にする
+      // （出勤済みで未退勤の時は無効）
+      const leaveEnabled = hasOut || (!hasIn && !hasOut);
+      el.btnLeave.disabled = !leaveEnabled;
+      el.btnLeaveAM.disabled = !leaveEnabled;
+      el.btnLeavePM.disabled = !leaveEnabled;
+    }
     el.brkLabel.textContent = onBreak ? "休憩終了" : "休憩開始";
     el.brkSub.textContent = onBreak ? "BREAK END" : "BREAK START";
 
@@ -461,8 +574,8 @@
 
   function renderHistory() {
     const keys = Object.keys(records).sort().reverse().slice(0, 14);
-    if (keys.length === 0) {
-      el.historyBody.innerHTML = `<tr><td class="empty" colspan="6">まだ記録がありません</td></tr>`;
+      if (keys.length === 0) {
+      el.historyBody.innerHTML = `<tr><td class="empty" colspan="8">まだ記録がありません</td></tr>`;
       return;
     }
     el.historyBody.innerHTML = keys.map((k) => {
@@ -478,8 +591,18 @@
       const overStr = workMin != null ? overtimeHMM(workMin) : null;
       // 0:00 はダッシュ表示
       const over = (overStr && overStr !== "0:00") ? overStr : null;
+      // タグ表示を作成
+      const tags = Array.isArray(r.tags) && r.tags.length > 0 ? r.tags.map(t => t.tag).join(' ') : null;
+      // 状態表示：押された最後のボタンを優先して表示
+      let state = null;
+      if (isOnBreak(r)) state = '休憩中';
+      else if (r.lastAction) state = r.lastAction;
+      else if (r.out) state = '退勤済み';
+      else if (r.in) state = '勤務中';
+      else state = '未出勤';
       const cell = (v) => v ? `<td>${v}</td>` : `<td class="dash">—</td>`;
-      return `<tr><td>${label}</td>${cell(inT)}${cell(outT)}${cell(brk)}${cell(work)}${cell(over)}</tr>`;
+      // 状態列とタグ列を追加
+      return `<tr><td>${label}</td>${cell(inT)}${cell(outT)}${cell(brk)}${cell(work)}${cell(over)}${cell(state)}${cell(tags)}</tr>`;
     }).join("");
   }
 
@@ -666,6 +789,78 @@
   el.btnIn.addEventListener("click", clockIn);
   el.btnOut.addEventListener("click", clockOut);
   el.btnBreak.addEventListener("click", toggleBreak);
+  const morePanel = document.getElementById('morePanel');
+  const btnMore = document.getElementById('btnMore');
+  btnMore.addEventListener('click', () => {
+    const open = !morePanel.hasAttribute('hidden');
+    if (open) {
+      morePanel.setAttribute('hidden', '');
+      btnMore.textContent = 'その他を表示';
+    } else {
+      morePanel.removeAttribute('hidden');
+      btnMore.textContent = 'その他を閉じる';
+    }
+  });
+  // 新ボタンはとりあえず簡易な記録アクション (タグを履歴に残す)
+  function addTag(tag) {
+    const key = dateKey(new Date());
+    if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] };
+    if (!Array.isArray(records[key].tags)) records[key].tags = [];
+    records[key].tags.push({ tag, at: new Date().toISOString() });
+    save(records);
+    renderState();
+  }
+  // 外出/帰社と直行/直帰はトグルとして扱う
+  el.btnOuting.addEventListener("click", () => {
+    const key = dateKey(new Date());
+    if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [], outing: false, direct: false };
+    // 押されたら外出状態にし、直帰ボタンが表示されるよう直行フラグも立てる
+    records[key].outing = true;
+    records[key].direct = true;
+    // 押されたボタンの状態として記録
+    records[key].lastAction = '外出';
+    // addTag は履歴にも残す
+    addTag("外出");
+    save(records);
+    renderState();
+  });
+  el.btnReturn.addEventListener("click", () => {
+    const key = dateKey(new Date());
+    if (!records[key]) return;
+    // 帰社時は外出/直行の両フラグをクリアしておく
+    records[key].outing = false;
+    records[key].direct = false;
+    records[key].lastAction = '帰社';
+    addTag("帰社");
+    save(records);
+    renderState();
+  });
+  el.btnDirectGo.addEventListener("click", () => {
+    const key = dateKey(new Date());
+    if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [], outing: false, direct: false };
+    // 直行を押したら直帰ではなく帰社ボタンを表示するため外出フラグも立てる
+    records[key].direct = true;
+    records[key].outing = true;
+    records[key].lastAction = '直行';
+    addTag("直行");
+    save(records);
+    renderState();
+  });
+  el.btnDirectHome.addEventListener("click", () => {
+    const key = dateKey(new Date());
+    if (!records[key]) return;
+    // 直帰時は両方のフラグをクリア
+    records[key].direct = false;
+    records[key].outing = false;
+    records[key].lastAction = '直帰';
+    addTag("直帰");
+    save(records);
+    renderState();
+  });
+  el.btnLeave.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = '休暇'; addTag("休暇"); });
+  el.btnLeaveAM.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = 'AM休暇'; addTag("AM休暇"); });
+  el.btnLeavePM.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = 'PM休暇'; addTag("PM休暇"); });
+  el.btnWFH.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = '在宅'; addTag("在宅"); });
   el.btnClear.addEventListener("click", clearAll);
   // ロック画面のどこをタップしても認証を起動 (リセットリンクは除外)
   el.lockOverlay.addEventListener("click", (e) => {

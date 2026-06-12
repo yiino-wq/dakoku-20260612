@@ -1,0 +1,11 @@
+[33mcommit 2b724aa59a48398a3745c9586fe58c75e63c0c34[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: 飯野 勇輝 <N7379@NAV21.NAV-ASSIST.CO.JP>
+Date:   Fri Jun 12 16:02:06 2026 +0900
+
+    first commit
+
+ icon.svg             |  19 [32m++[m
+ index.html           | 699 [32m+++++++++++++++++++++++++++++++++++++++++++++++++++[m
+ manifest.webmanifest |  28 [32m+++[m
+ sw.js                |  43 [32m++++[m
+ 4 files changed, 789 insertions(+)
