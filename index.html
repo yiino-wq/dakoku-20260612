@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#1d4ed8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="打刻">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>打刻アプリ</title>
+<style>
+  :root {
+    --bg: #dbeafe;
+    --card: #ffffff;
+    --card-soft: #dbeafe;
+    --text: #0f172a;
+    --muted: #475569;
+    --accent: #1d4ed8;
+    --in: #2563eb;
+    --in-dark: #1e40af;
+    --out: #0284c7;
+    --out-dark: #075985;
+    --border: #93c5fd;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Hiragino Kaku Gothic ProN",
+                 "Hiragino Sans", Meiryo, sans-serif;
+    background: linear-gradient(160deg, #93c5fd 0%, #bfdbfe 55%, #c7d9f5 100%);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .app {
+    width: 100%;
+    max-width: 520px;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  header h1 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  header p {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-top: 4px;
+  }
+
+  .clock-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: 0 14px 34px rgba(29, 78, 216, 0.22);
+  }
+  .date { color: var(--muted); font-size: 1rem; }
+  .time {
+    font-size: 3.4rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+    margin: 6px 0 14px;
+  }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.95rem;
+    padding: 6px 16px;
+    border-radius: 999px;
+    background: var(--card-soft);
+    color: var(--muted);
+  }
+  .status .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--muted);
+  }
+  .status.working { color: var(--in); }
+  .status.working .dot { background: var(--in); box-shadow: 0 0 8px var(--in); }
+  .status.done { color: var(--accent); }
+  .status.done .dot { background: var(--accent); }
+  .status.break { color: #4338ca; }
+  .status.break .dot { background: #4338ca; box-shadow: 0 0 8px #818cf8; }
+  .status.none { color: #dc2626; font-weight: 600; }
+  .status.none .dot { background: #dc2626; }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin: 22px 0;
+  }
+  button.punch {
+    border: none;
+    border-radius: 16px;
+    padding: 20px 8px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.08s ease, opacity 0.2s ease, filter 0.2s ease;
+  }
+  button.punch .sub { display: block; font-size: 0.66rem; font-weight: 500; opacity: 0.85; margin-top: 4px; letter-spacing: 0.05em; }
+  button.in  { background: linear-gradient(160deg, var(--in), var(--in-dark)); }
+  button.brk { background: linear-gradient(160deg, #6366f1, #4338ca); }
+  button.out { background: linear-gradient(160deg, var(--out), var(--out-dark)); }
+  button.punch:active:not(:disabled) { transform: scale(0.97); }
+  button.punch:disabled { opacity: 0.32; cursor: not-allowed; filter: grayscale(0.4); }
+
+  .today {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    text-align: center;
+  }
+  .today .label { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; }
+  .today .val { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .today .full { grid-column: 1 / -1; border-top: 1px dashed var(--border); padding-top: 12px; }
+
+  .history {
+    margin-top: 26px;
+  }
+  .history h2 {
+    font-size: 0.95rem;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .history .clear {
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .history .clear:hover { color: #f87171; border-color: #f87171; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+  th, td { padding: 9px 8px; text-align: center; border-bottom: 1px solid var(--border); }
+  th { color: var(--muted); font-weight: 600; font-size: 0.78rem; }
+  td { font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  .empty { color: var(--muted); text-align: center; padding: 18px; font-size: 0.85rem; }
+  td.dash { color: var(--muted); }
+
+  footer { text-align: center; color: var(--muted); font-size: 0.72rem; margin-top: 22px; }
+
+  /* ---- 指紋認証ロック画面 ---- */
+  .lock-overlay {
+    position: fixed; inset: 0;
+    background: linear-gradient(160deg, #1e3a8a 0%, #1d4ed8 55%, #2563eb 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 9999; color: #fff; text-align: center; padding: 24px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lock-overlay .lock-icon { transition: transform 0.4s ease; }
+  .lock-overlay:active .lock-icon { transform: scale(1.1); }
+  .lock-overlay.hidden { display: none; }
+  .lock-box { max-width: 360px; width: 100%; }
+  .lock-icon { font-size: 4rem; margin-bottom: 20px; line-height: 1; }
+  .lock-overlay h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 8px; }
+  .lock-overlay p { font-size: 0.95rem; opacity: 0.88; margin-bottom: 28px; line-height: 1.5; }
+  .lock-error { margin-top: 8px; font-size: 0.85rem; color: #fecaca; min-height: 1.2em; }
+  .lock-link {
+    margin-top: 26px; background: none; border: none;
+    color: rgba(255,255,255,0.7); font-size: 0.78rem;
+    text-decoration: underline; cursor: pointer;
+  }
+  .lock-link:hover { color: #fff; }
+
+  /* ---- 認証設定ボタン ---- */
+  .auth-settings { margin-top: 18px; text-align: center; }
+  .auth-btn {
+    background: var(--card); border: 1px solid var(--border);
+    color: var(--accent); font-size: 0.85rem; font-weight: 600;
+    padding: 10px 18px; border-radius: 10px; cursor: pointer;
+  }
+  .auth-btn[hidden] { display: none; }
+  .auth-btn:hover { filter: brightness(0.97); }
+  .auth-btn.danger { color: #b91c1c; border-color: #fecaca; background: #fff5f5; }
+  .auth-note { color: var(--muted); font-size: 0.78rem; margin-top: 8px; }
+</style>
+</head>
+<body>
+  <div class="lock-overlay hidden" id="lockOverlay">
+    <div class="lock-box">
+      <div class="lock-icon">🔒</div>
+      <h2>ロック中</h2>
+      <p id="lockHint">指紋認証を起動しています…</p>
+      <div class="lock-error" id="lockError"></div>
+      <button class="lock-link" id="btnResetAuth">認証情報をリセット</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <header>
+      <h1>⏱ 打刻アプリ</h1>
+      <p>出勤・退勤を記録します</p>
+    </header>
+
+    <div class="clock-card">
+      <div class="date" id="date">----年--月--日 (-)</div>
+      <div class="time" id="clock">--:--:--</div>
+      <div class="status" id="status"><span class="dot"></span><span id="statusText">未出勤</span></div>
+
+      <div class="buttons">
+        <button class="punch in"  id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
+        <button class="punch brk" id="btnBreak"><span id="brkLabel">休憩開始</span><span class="sub" id="brkSub">BREAK START</span></button>
+        <button class="punch out" id="btnOut">退勤<span class="sub">CLOCK OUT</span></button>
+      </div>
+
+      <div class="today">
+        <div><div class="label">出勤</div><div class="val" id="todayIn">--:--</div></div>
+        <div><div class="label">退勤</div><div class="val" id="todayOut">--:--</div></div>
+        <div><div class="label">休憩</div><div class="val" id="todayBreak">0:00</div></div>
+        <div><div class="label">勤務時間</div><div class="val" id="todayWork">--:--</div></div>
+        <div class="full"><div class="label">残業 (8時間超 / 15分単位)</div><div class="val" id="todayOvertime">--:--</div></div>
+      </div>
+    </div>
+
+    <div class="history">
+      <h2>直近の記録 <button class="clear" id="btnClear">全削除</button></h2>
+      <table>
+        <thead>
+          <tr><th>日付</th><th>出勤</th><th>退勤</th><th>休憩</th><th>勤務</th><th>残業</th></tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+    </div>
+
+    <div class="auth-settings">
+      <button class="auth-btn" id="btnAuthSetup" hidden>🔐 指紋認証を有効にする</button>
+      <button class="auth-btn danger" id="btnAuthRemove" hidden>指紋認証を無効にする</button>
+      <p class="auth-note" id="authNote" hidden>指紋認証はHTTPS (または localhost) でのみ利用できます。</p>
+    </div>
+
+    <footer>データはこのブラウザ内にのみ保存されます</footer>
+  </div>
+
+<script>
+(function () {
+  "use strict";
+
+  const STORAGE_KEY = "dakoku_records_v1";
+  const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
+
+  // ---- 日付/時刻ユーティリティ ----
+  const pad = (n) => String(n).padStart(2, "0");
+
+  function dateKey(d) {
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  }
+  function formatDateJP(d) {
+    return `${d.getFullYear()}年${pad(d.getMonth() + 1)}月${pad(d.getDate())}日 (${WEEKDAYS[d.getDay()]})`;
+  }
+  function formatTime(d) {
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  }
+  // ISO文字列 → "HH:MM"
+  function hhmm(iso) {
+    if (!iso) return null;
+    const d = new Date(iso);
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  // 2つのISO間の勤務時間 "H:MM"
+  function workSpan(inIso, outIso) {
+    if (!inIso || !outIso) return null;
+    let ms = new Date(outIso) - new Date(inIso);
+    if (ms < 0) return null;
+    const totalMin = Math.floor(ms / 60000);
+    return `${Math.floor(totalMin / 60)}:${pad(totalMin % 60)}`;
+  }
+  // ミリ秒 → "H:MM" (0以下は "0:00")
+  function msToHMM(ms) {
+    if (!ms || ms <= 0) return "0:00";
+    const totalMin = Math.floor(ms / 60000);
+    return `${Math.floor(totalMin / 60)}:${pad(totalMin % 60)}`;
+  }
+  // 累計休憩ms (進行中の休憩は untilIso まで)
+  function totalBreakMs(rec, untilIso) {
+    if (!rec || !Array.isArray(rec.breaks)) return 0;
+    let ms = 0;
+    for (const b of rec.breaks) {
+      if (!b || !b.start) continue;
+      const end = b.end || untilIso;
+      if (!end) continue;
+      const d = new Date(end) - new Date(b.start);
+      if (d > 0) ms += d;
+    }
+    return ms;
+  }
+  function isOnBreak(rec) {
+    if (!rec || !Array.isArray(rec.breaks) || rec.breaks.length === 0) return false;
+    const last = rec.breaks[rec.breaks.length - 1];
+    return !!(last && last.start && !last.end);
+  }
+  // 休憩控除後の勤務時間
+  function netWorkSpan(inIso, outIso, breaksMs) {
+    if (!inIso || !outIso) return null;
+    let ms = new Date(outIso) - new Date(inIso) - (breaksMs || 0);
+    if (ms < 0) ms = 0;
+    return msToHMM(ms);
+  }
+  // 休憩控除後の勤務分 (number)
+  function netWorkMin(inIso, outIso, breaksMs) {
+    if (!inIso || !outIso) return null;
+    let ms = new Date(outIso) - new Date(inIso) - (breaksMs || 0);
+    if (ms < 0) ms = 0;
+    return Math.floor(ms / 60000);
+  }
+  function minToHMM(min) {
+    if (min == null || min < 0) return "0:00";
+    return `${Math.floor(min / 60)}:${pad(min % 60)}`;
+  }
+  // 残業時間 (通常8時間超、15分単位で切り捨て)
+  const STANDARD_MIN = 480; // 8h
+  function overtimeHMM(workMin) {
+    if (workMin == null) return null;
+    const over = Math.max(0, workMin - STANDARD_MIN);
+    const rounded = Math.floor(over / 15) * 15;
+    return minToHMM(rounded);
+  }
+
+  // ---- データ ----
+  function load() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch (e) {
+      return {};
+    }
+  }
+  function save(records) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  }
+
+  let records = load();
+
+  // ---- 要素 ----
+  const el = {
+    date: document.getElementById("date"),
+    clock: document.getElementById("clock"),
+    status: document.getElementById("status"),
+    statusText: document.getElementById("statusText"),
+    btnIn: document.getElementById("btnIn"),
+    btnOut: document.getElementById("btnOut"),
+    todayIn: document.getElementById("todayIn"),
+    todayOut: document.getElementById("todayOut"),
+    todayWork: document.getElementById("todayWork"),
+    historyBody: document.getElementById("historyBody"),
+    btnClear: document.getElementById("btnClear"),
+    btnBreak: document.getElementById("btnBreak"),
+    brkLabel: document.getElementById("brkLabel"),
+    brkSub: document.getElementById("brkSub"),
+    todayBreak: document.getElementById("todayBreak"),
+    todayOvertime: document.getElementById("todayOvertime"),
+    lockOverlay: document.getElementById("lockOverlay"),
+    lockHint: document.getElementById("lockHint"),
+    btnResetAuth: document.getElementById("btnResetAuth"),
+    lockError: document.getElementById("lockError"),
+    btnAuthSetup: document.getElementById("btnAuthSetup"),
+    btnAuthRemove: document.getElementById("btnAuthRemove"),
+    authNote: document.getElementById("authNote"),
+  };
+
+  // ---- 描画 ----
+  function todayRecord() {
+    return records[dateKey(new Date())] || null;
+  }
+  // 出勤済みの最新レコード (今日 / 過去問わず、日付降順の先頭)
+  function latestRecord() {
+    const keys = Object.keys(records).sort();
+    for (let i = keys.length - 1; i >= 0; i--) {
+      const r = records[keys[i]];
+      if (r && r.in) return { key: keys[i], rec: r };
+    }
+    return null;
+  }
+
+  function renderClock() {
+    const now = new Date();
+    el.date.textContent = formatDateJP(now);
+    el.clock.textContent = formatTime(now);
+
+    // 出勤中はリアルタイムで勤務時間と休憩を更新
+    const rec = todayRecord();
+    if (rec && rec.in && !rec.out) {
+      const nowIso = now.toISOString();
+      const breaksMs = totalBreakMs(rec, nowIso);
+      const workMin = netWorkMin(rec.in, nowIso, breaksMs);
+      el.todayBreak.textContent = msToHMM(breaksMs);
+      el.todayWork.textContent = workMin != null ? minToHMM(workMin) : "0:00";
+      el.todayOvertime.textContent = workMin != null ? overtimeHMM(workMin) : "0:00";
+    }
+  }
+
+  function renderState() {
+    const rec = todayRecord();
+    const hasIn = !!(rec && rec.in);
+    const hasOut = !!(rec && rec.out);
+    const onBreak = isOnBreak(rec);
+    const nowIso = new Date().toISOString();
+
+    // ステータス
+    el.status.classList.remove("working", "done", "break", "none");
+    if (!hasIn) {
+      el.status.classList.add("none");
+      el.statusText.textContent = "未出勤（本日は打刻されていません）";
+    } else if (hasOut) {
+      el.status.classList.add("done");
+      el.statusText.textContent = "退勤済み";
+    } else if (onBreak) {
+      el.status.classList.add("break");
+      el.statusText.textContent = "休憩中";
+    } else {
+      el.status.classList.add("working");
+      el.statusText.textContent = "勤務中";
+    }
+
+    // ボタン
+    // 退勤は「最新の出勤レコード」が存在し休憩中でない限り押下可 (翌日の出勤前は何度でも上書き可)
+    const latest = latestRecord();
+    const latestOnBreak = latest ? isOnBreak(latest.rec) : false;
+    el.btnIn.disabled = hasIn;
+    el.btnBreak.disabled = !hasIn || hasOut;
+    el.btnOut.disabled = !latest || latestOnBreak;
+    el.brkLabel.textContent = onBreak ? "休憩終了" : "休憩開始";
+    el.brkSub.textContent = onBreak ? "BREAK END" : "BREAK START";
+
+    // 当日サマリ
+    const breaksMs = totalBreakMs(rec, hasOut ? (rec && rec.out) : nowIso);
+    el.todayIn.textContent = hhmm(rec && rec.in) || "--:--";
+    el.todayOut.textContent = hhmm(rec && rec.out) || "--:--";
+    el.todayBreak.textContent = hasIn ? msToHMM(breaksMs) : "0:00";
+    let workMin = null;
+    if (hasIn && hasOut) workMin = netWorkMin(rec.in, rec.out, breaksMs);
+    else if (hasIn) workMin = netWorkMin(rec.in, nowIso, breaksMs);
+    el.todayWork.textContent = workMin != null ? minToHMM(workMin) : "--:--";
+    el.todayOvertime.textContent = workMin != null ? overtimeHMM(workMin) : "--:--";
+
+    renderHistory();
+  }
+
+  function renderHistory() {
+    const keys = Object.keys(records).sort().reverse().slice(0, 14);
+    if (keys.length === 0) {
+      el.historyBody.innerHTML = `<tr><td class="empty" colspan="6">まだ記録がありません</td></tr>`;
+      return;
+    }
+    el.historyBody.innerHTML = keys.map((k) => {
+      const r = records[k];
+      const d = new Date(k + "T00:00:00");
+      const label = `${pad(d.getMonth() + 1)}/${pad(d.getDate())}(${WEEKDAYS[d.getDay()]})`;
+      const inT = hhmm(r.in);
+      const outT = hhmm(r.out);
+      const breaksMs = totalBreakMs(r, r.out);
+      const brk = breaksMs > 0 ? msToHMM(breaksMs) : null;
+      const workMin = (r.in && r.out) ? netWorkMin(r.in, r.out, breaksMs) : null;
+      const work = workMin != null ? minToHMM(workMin) : null;
+      const overStr = workMin != null ? overtimeHMM(workMin) : null;
+      // 0:00 はダッシュ表示
+      const over = (overStr && overStr !== "0:00") ? overStr : null;
+      const cell = (v) => v ? `<td>${v}</td>` : `<td class="dash">—</td>`;
+      return `<tr><td>${label}</td>${cell(inT)}${cell(outT)}${cell(brk)}${cell(work)}${cell(over)}</tr>`;
+    }).join("");
+  }
+
+  // ---- 操作 ----
+  function clockIn() {
+    const key = dateKey(new Date());
+    if (records[key] && records[key].in) return;
+    records[key] = { in: new Date().toISOString(), out: null, breaks: [] };
+    save(records);
+    renderState();
+  }
+
+  function clockOut() {
+    // 最新の出勤レコードの out を現在時刻で上書き (後優先)
+    const target = latestRecord();
+    if (!target) return;
+    if (isOnBreak(target.rec)) return;
+    target.rec.out = new Date().toISOString();
+    save(records);
+    renderState();
+  }
+
+  function toggleBreak() {
+    const key = dateKey(new Date());
+    const rec = records[key];
+    if (!rec || !rec.in || rec.out) return;
+    if (!Array.isArray(rec.breaks)) rec.breaks = [];
+    if (isOnBreak(rec)) {
+      rec.breaks[rec.breaks.length - 1].end = new Date().toISOString();
+    } else {
+      rec.breaks.push({ start: new Date().toISOString(), end: null });
+    }
+    save(records);
+    renderState();
+  }
+
+  function clearAll() {
+    if (!confirm("すべての打刻記録を削除します。よろしいですか?")) return;
+    records = {};
+    save(records);
+    renderState();
+  }
+
+  // ---- 指紋認証 (WebAuthn) ----
+  const AUTH_KEY = "dakoku_webauthn_v1";
+
+  function authSupported() {
+    return !!(window.PublicKeyCredential && window.isSecureContext && navigator.credentials);
+  }
+  function loadCredId() {
+    try {
+      const v = JSON.parse(localStorage.getItem(AUTH_KEY));
+      return (v && v.credentialId) || null;
+    } catch (e) { return null; }
+  }
+  function saveCredId(id) {
+    localStorage.setItem(AUTH_KEY, JSON.stringify({ credentialId: id }));
+  }
+  function clearCredId() { localStorage.removeItem(AUTH_KEY); }
+
+  function b64uEncode(buf) {
+    const bytes = new Uint8Array(buf);
+    let s = "";
+    for (let i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+    return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  }
+  function b64uDecode(str) {
+    const padded = str + "=".repeat((4 - (str.length % 4)) % 4);
+    const b64 = padded.replace(/-/g, "+").replace(/_/g, "/");
+    const bin = atob(b64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes.buffer;
+  }
+
+  async function registerAuth() {
+    if (!authSupported()) throw new Error("HTTPS (または localhost) 環境が必要です");
+    const challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
+    const userId = new Uint8Array(16); crypto.getRandomValues(userId);
+    const cred = await navigator.credentials.create({
+      publicKey: {
+        challenge,
+        rp: { name: "打刻アプリ" },
+        user: { id: userId, name: "dakoku-user", displayName: "打刻ユーザー" },
+        pubKeyCredParams: [
+          { type: "public-key", alg: -7 },
+          { type: "public-key", alg: -257 }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: "platform",
+          userVerification: "required",
+          residentKey: "preferred"
+        },
+        timeout: 60000,
+        attestation: "none"
+      }
+    });
+    if (!cred) throw new Error("認証情報を作成できませんでした");
+    saveCredId(b64uEncode(cred.rawId));
+  }
+
+  async function verifyAuth() {
+    const id = loadCredId();
+    if (!id) throw new Error("認証情報が未登録です");
+    const challenge = new Uint8Array(32); crypto.getRandomValues(challenge);
+    const assertion = await navigator.credentials.get({
+      publicKey: {
+        challenge,
+        timeout: 60000,
+        userVerification: "required",
+        allowCredentials: [{
+          id: b64uDecode(id),
+          type: "public-key",
+          transports: ["internal"]
+        }]
+      }
+    });
+    if (!assertion) throw new Error("認証に失敗しました");
+  }
+
+  function renderAuthUI() {
+    const supported = authSupported();
+    const enabled = !!loadCredId();
+    el.btnAuthSetup.hidden = !supported || enabled;
+    el.btnAuthRemove.hidden = !supported || !enabled;
+    el.authNote.hidden = supported;
+  }
+
+  async function handleSetupAuth() {
+    try {
+      await registerAuth();
+      alert("指紋認証を有効にしました。\n次回起動時から認証が必要になります。");
+      renderAuthUI();
+    } catch (e) {
+      if (e && e.name === "NotAllowedError") return;
+      alert("認証設定に失敗しました: " + (e.message || e.name || e));
+    }
+  }
+
+  function handleRemoveAuth() {
+    if (!confirm("指紋認証を無効にします。よろしいですか?")) return;
+    clearCredId();
+    renderAuthUI();
+  }
+
+  let unlockInFlight = false;
+  async function handleUnlock() {
+    if (unlockInFlight) return;
+    unlockInFlight = true;
+    el.lockError.textContent = "";
+    try {
+      await verifyAuth();
+      el.lockOverlay.classList.add("hidden");
+    } catch (e) {
+      if (e && e.name === "NotAllowedError") {
+        el.lockError.textContent = "認証がキャンセルされました";
+      } else {
+        el.lockError.textContent = "認証に失敗しました: " + (e.message || e.name);
+      }
+      el.lockHint.textContent = "画面をタップして認証してください";
+    } finally {
+      unlockInFlight = false;
+    }
+  }
+
+  function handleResetAuth() {
+    if (!confirm("認証情報をリセットします。\n指紋認証は無効になり、ロックが解除されます。よろしいですか?")) return;
+    clearCredId();
+    el.lockOverlay.classList.add("hidden");
+    renderAuthUI();
+  }
+
+  function initLockScreen() {
+    if (authSupported() && loadCredId()) {
+      el.lockOverlay.classList.remove("hidden");
+      el.lockHint.textContent = "指紋認証を起動しています…";
+      // 起動時に即座に認証ダイアログを試行 (環境により失敗時はタップで再実行)
+      handleUnlock();
+    } else {
+      el.lockOverlay.classList.add("hidden");
+    }
+  }
+
+  el.btnIn.addEventListener("click", clockIn);
+  el.btnOut.addEventListener("click", clockOut);
+  el.btnBreak.addEventListener("click", toggleBreak);
+  el.btnClear.addEventListener("click", clearAll);
+  // ロック画面のどこをタップしても認証を起動 (リセットリンクは除外)
+  el.lockOverlay.addEventListener("click", (e) => {
+    if (e.target.closest("#btnResetAuth")) return;
+    handleUnlock();
+  });
+  el.btnResetAuth.addEventListener("click", handleResetAuth);
+  el.btnAuthSetup.addEventListener("click", handleSetupAuth);
+  el.btnAuthRemove.addEventListener("click", handleRemoveAuth);
+
+  // ---- 起動 ----
+  initLockScreen();
+  renderAuthUI();
+  renderClock();
+  renderState();
+  setInterval(renderClock, 1000);
+  // 日付が変わったらボタン状態を更新するため定期的に再評価
+  setInterval(renderState, 30000);
+})();
+
+// Service Worker 登録 (file:// では動作しません。http(s) 経由で提供してください)
+if ("serviceWorker" in navigator && location.protocol !== "file:") {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch((err) => {
+      console.warn("SW registration failed:", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
