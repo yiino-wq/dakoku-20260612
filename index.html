@@ -100,28 +100,15 @@
   }
   .buttons .primary {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 12px;
   }
   .buttons .more {
     margin-top: 10px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    display: none;
   }
   /* hidden 属性で制御（JS が属性を付け外しするため） */
   .more[hidden] { display: none; }
-  .more-toggle {
-    margin-top: 12px;
-    width: 100%;
-    background: none;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-weight: 700;
-    cursor: pointer;
-  }
   button.punch {
     border: none;
     border-radius: 18px;
@@ -257,24 +244,18 @@
 
       <div class="buttons">
         <div class="primary">
-          <button class="punch in"  id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
-          <button class="punch brk" id="btnBreak"><span id="brkLabel">休憩開始</span><span class="sub" id="brkSub">BREAK START</span></button>
+          <button class="punch in" id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
           <button class="punch out" id="btnOut">退勤<span class="sub">CLOCK OUT</span></button>
-        </div>
 
-        <div class="primary" style="margin-top:12px;">
           <button class="punch" id="btnOuting">外出<span class="sub">GO OUT</span></button>
           <button class="punch" id="btnDirectGo">直行<span class="sub">DIRECT GO</span></button>
-          <div></div>
-        </div>
 
-        <button class="more-toggle" id="btnMore">その他を表示</button>
-
-        <div class="more" id="morePanel" hidden>
           <button class="punch" id="btnReturn">帰社<span class="sub">RETURN</span></button>
           <button class="punch" id="btnDirectHome">直帰<span class="sub">DIRECT HOME</span></button>
+
           <button class="punch" id="btnWFH">在宅<span class="sub">WFH</span></button>
           <button class="punch" id="btnLeave">休暇<span class="sub">LEAVE</span></button>
+
           <button class="punch" id="btnLeaveAM">AM休暇<span class="sub">AM LEAVE</span></button>
           <button class="punch" id="btnLeavePM">PM休暇<span class="sub">PM LEAVE</span></button>
         </div>
@@ -419,9 +400,6 @@
     todayWork: document.getElementById("todayWork"),
     historyBody: document.getElementById("historyBody"),
     btnClear: document.getElementById("btnClear"),
-    btnBreak: document.getElementById("btnBreak"),
-    brkLabel: document.getElementById("brkLabel"),
-    brkSub: document.getElementById("brkSub"),
     todayBreak: document.getElementById("todayBreak"),
     todayOvertime: document.getElementById("todayOvertime"),
     btnOuting: document.getElementById("btnOuting"),
@@ -502,7 +480,6 @@
     // 基本ボタン制御
     // 出勤ボタンは「出勤済みかつ未退勤」の場合のみ無効にする
     el.btnIn.disabled = hasIn && !hasOut;
-    el.btnBreak.disabled = !hasIn || hasOut;
     el.btnOut.disabled = !latest || latestOnBreak;
 
     // 新しいボタンの有効/無効制御
@@ -514,7 +491,6 @@
     // 休憩中は他のボタンをすべて無効化（休憩の開始/終了のみ有効）
     if (onBreak) {
       el.btnIn.disabled = true;
-      el.btnBreak.disabled = false; // 休憩終了用に有効
       el.btnOut.disabled = true;
       // 休憩中は外出/直行ペアは非表示にする
       el.btnOuting.disabled = true; el.btnOuting.hidden = true;
@@ -555,8 +531,7 @@
       el.btnLeaveAM.disabled = !leaveEnabled;
       el.btnLeavePM.disabled = !leaveEnabled;
     }
-    el.brkLabel.textContent = onBreak ? "休憩終了" : "休憩開始";
-    el.brkSub.textContent = onBreak ? "BREAK END" : "BREAK START";
+    // 休憩ボタンは非表示のためラベル更新処理は削除
 
     // 当日サマリ
     const breaksMs = totalBreakMs(rec, hasOut ? (rec && rec.out) : nowIso);
@@ -788,19 +763,7 @@
 
   el.btnIn.addEventListener("click", clockIn);
   el.btnOut.addEventListener("click", clockOut);
-  el.btnBreak.addEventListener("click", toggleBreak);
-  const morePanel = document.getElementById('morePanel');
-  const btnMore = document.getElementById('btnMore');
-  btnMore.addEventListener('click', () => {
-    const open = !morePanel.hasAttribute('hidden');
-    if (open) {
-      morePanel.setAttribute('hidden', '');
-      btnMore.textContent = 'その他を表示';
-    } else {
-      morePanel.removeAttribute('hidden');
-      btnMore.textContent = 'その他を閉じる';
-    }
-  });
+  // 'その他' パネルは全て表示する仕様にしたため、関連する DOM 操作は不要
   // 新ボタンはとりあえず簡易な記録アクション (タグを履歴に残す)
   function addTag(tag) {
     const key = dateKey(new Date());
