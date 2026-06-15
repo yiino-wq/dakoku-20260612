@@ -105,6 +105,14 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
+  /* 出勤/退勤下のセパレータ */
+  .buttons .primary .separator {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.06), rgba(0,0,0,0.04));
+    margin: 6px 0 12px;
+    border-radius: 2px;
+  }
   .buttons .more {
     margin-top: 10px;
     display: none;
@@ -154,6 +162,24 @@
   .today .label { color: var(--muted); font-size: 0.75rem; margin-bottom: 6px; }
   .today .val { font-size: 1.2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
   .today .full { grid-column: 1 / -1; border-top: 1px dashed var(--border); padding-top: 12px; }
+
+  /* モーダル */
+  .modal-overlay {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; z-index: 10000;
+    background: rgba(0,0,0,0.45);
+  }
+  .modal-overlay[hidden] { display: none; }
+  .modal-box {
+    background: var(--card); color: var(--text); padding: 18px; border-radius: 12px; width: 92%; max-width: 420px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  }
+  .modal-row { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+  .modal-row label { width: 72px; color: var(--muted); font-size: 0.9rem; }
+  .modal-row input, .modal-row textarea { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; }
+  .modal-row textarea { resize: vertical; min-height: 44px; }
+  .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+  .modal-btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
+  .modal-btn.primary { background: linear-gradient(160deg, var(--in), var(--in-dark)); color: #fff; border: none; }
 
   .history {
     margin-top: 26px;
@@ -271,6 +297,7 @@
         <div class="primary">
           <button class="punch in" id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
           <button class="punch out" id="btnOut">退勤<span class="sub">CLOCK OUT</span></button>
+          <div class="separator" aria-hidden="true"></div>
 
           <button class="punch" id="btnOuting">外出<span class="sub">GO OUT</span></button>
           <button class="punch" id="btnDirectGo">直行<span class="sub">DIRECT GO</span></button>
@@ -283,6 +310,28 @@
 
           <button class="punch" id="btnLeaveAM">AM休暇<span class="sub">AM LEAVE</span></button>
           <button class="punch" id="btnLeavePM">PM休暇<span class="sub">PM LEAVE</span></button>
+        </div>
+      </div>
+      <!-- 予定入力モーダル -->
+      <div class="modal-overlay" id="returnModal" hidden>
+        <div class="modal-box">
+          <h3 id="modalTitle">戻り予定を入力</h3>
+          <div class="modal-row">
+            <label for="modalDate">日付</label>
+            <input type="date" id="modalDate">
+          </div>
+          <div class="modal-row">
+            <label for="modalTime">時間</label>
+            <input type="time" id="modalTime">
+          </div>
+          <div class="modal-row">
+            <label for="modalRemark">備考</label>
+            <textarea id="modalRemark" rows="2" placeholder="外出先やメモ"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn" id="modalCancel">キャンセル</button>
+            <button class="modal-btn primary" id="modalConfirm">保存</button>
+          </div>
         </div>
       </div>
 
@@ -802,15 +851,17 @@
   el.btnOuting.addEventListener("click", () => {
     const key = dateKey(new Date());
     if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [], outing: false, direct: false };
-    // 押されたら外出状態にし、直帰ボタンが表示されるよう直行フラグも立てる
-    records[key].outing = true;
-    records[key].direct = true;
-    // 押されたボタンの状態として記録
-    records[key].lastAction = '外出';
-    // addTag は履歴にも残す
-    addTag("外出");
-    save(records);
-    renderState();
+    // 開始時に予定入力モーダルを表示して、保存時に記録する
+    openReturnModal('外出', (date, time, remark) => {
+      records[key].outing = true;
+      records[key].direct = false;
+      records[key].lastAction = '外出';
+      records[key].plannedReturn = date && time ? `${date}T${time}` : null;
+      records[key].remark = remark || null;
+      addTag("外出");
+      save(records);
+      renderState();
+    });
   });
   el.btnReturn.addEventListener("click", () => {
     const key = dateKey(new Date());
@@ -826,13 +877,17 @@
   el.btnDirectGo.addEventListener("click", () => {
     const key = dateKey(new Date());
     if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [], outing: false, direct: false };
-    // 直行を押したら直帰ではなく帰社ボタンを表示するため外出フラグも立てる
-    records[key].direct = true;
-    records[key].outing = true;
-    records[key].lastAction = '直行';
-    addTag("直行");
-    save(records);
-    renderState();
+    // 直行時も予定入力を求める
+    openReturnModal('直行', (date, time, remark) => {
+      records[key].direct = true;
+      records[key].outing = true;
+      records[key].lastAction = '直行';
+      records[key].plannedReturn = date && time ? `${date}T${time}` : null;
+      records[key].remark = remark || null;
+      addTag("直行");
+      save(records);
+      renderState();
+    });
   });
   el.btnDirectHome.addEventListener("click", () => {
     const key = dateKey(new Date());
@@ -850,6 +905,31 @@
   el.btnLeavePM.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = 'PM休暇'; addTag("PM休暇"); });
   el.btnWFH.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = '在宅'; addTag("在宅"); });
   el.btnClear.addEventListener("click", clearAll);
+  // モーダル操作
+  const modal = document.getElementById('returnModal');
+  const modalDate = document.getElementById('modalDate');
+  const modalTime = document.getElementById('modalTime');
+  const modalRemark = document.getElementById('modalRemark');
+  const modalCancel = document.getElementById('modalCancel');
+  const modalConfirm = document.getElementById('modalConfirm');
+  let modalCallback = null;
+
+  function openReturnModal(actionLabel, cb) {
+    modalCallback = cb;
+    document.getElementById('modalTitle').textContent = actionLabel + ' の戻り予定を入力';
+    // デフォルト値は現在の日時
+    const now = new Date();
+    modalDate.value = now.toISOString().slice(0,10);
+    modalTime.value = now.toTimeString().slice(0,5);
+    modalRemark.value = '';
+    modal.removeAttribute('hidden');
+  }
+  function closeReturnModal() { modal.setAttribute('hidden', ''); modalCallback = null; }
+  modalCancel.addEventListener('click', () => { closeReturnModal(); });
+  modalConfirm.addEventListener('click', () => {
+    if (modalCallback) modalCallback(modalDate.value, modalTime.value, modalRemark.value);
+    closeReturnModal();
+  });
   // ロック画面のどこをタップしても認証を起動 (リセットリンクは除外)
   el.lockOverlay.addEventListener("click", (e) => {
     if (e.target.closest("#btnResetAuth")) return;
