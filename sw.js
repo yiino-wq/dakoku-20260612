@@ -23,21 +23,8 @@ self.addEventListener("activate", (e) => {
 
 // cache-first: 同一オリジンの GET をキャッシュ優先で返す
 self.addEventListener("fetch", (e) => {
-  const req = e.request;
-  if (req.method !== "GET") return;
-  const url = new URL(req.url);
-  if (url.origin !== self.location.origin) return;
-
   e.respondWith(
-    caches.match(req).then((cached) => {
-      if (cached) return cached;
-      return fetch(req).then((res) => {
-        if (res && res.ok && res.type === "basic") {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy)).catch(() => {});
-        }
-        return res;
-      }).catch(() => cached);
-    })
+    fetch(e.request)
+      .catch(() => caches.match(e.request))
   );
 });
