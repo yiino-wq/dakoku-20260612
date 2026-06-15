@@ -100,7 +100,7 @@
   }
   .buttons .primary {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
   .buttons .more {
@@ -118,8 +118,10 @@
     color: #fff;
     cursor: pointer;
     transition: transform 0.08s ease, opacity 0.2s ease, filter 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
   }
-  /* ラベルが改行されないようにする */
+  /* ラベルが改行されないようにする（狭い画面ではオーバーフローを防ぐため上書きします） */
   button.punch { white-space: nowrap; }
   button.punch .sub { display: block; font-size: 0.66rem; font-weight: 500; opacity: 0.85; margin-top: 4px; letter-spacing: 0.05em; }
   button.in  { background: linear-gradient(160deg, var(--in), var(--in-dark)); }
@@ -218,6 +220,27 @@
   .auth-btn:hover { filter: brightness(0.97); }
   .auth-btn.danger { color: #b91c1c; border-color: #fecaca; background: #fff5f5; }
   .auth-note { color: var(--muted); font-size: 0.78rem; margin-top: 8px; }
+
+  /* レスポンシブ調整：幅の狭いデバイスでボタンがはみ出さないように縮小・改行を許可 */
+  @media (max-width: 420px) {
+    .clock-card { padding: 20px 14px; }
+    .buttons .primary { gap: 8px; }
+    button.punch {
+      padding: 18px 10px;
+      font-size: 1.05rem;
+      border-radius: 12px;
+      white-space: normal; /* ラベルの改行を許可して横にはみ出さないようにする */
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    button.punch .sub { font-size: 0.62rem; margin-top: 6px; }
+  }
+  /* 中程度の幅でもはみ出す問題に備え、より広めの閾値で調整 */
+  @media (max-width: 520px) {
+    .buttons .primary { gap: 10px; }
+    button.punch { font-size: 1.2rem; padding: 20px 12px; white-space: normal; overflow-wrap: break-word; }
+    button.punch .sub { font-size: 0.64rem; }
+  }
 </style>
 </head>
 <body>
