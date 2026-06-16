@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>配色サンプル — 打刻アプリ比較</title>
+<style>
+  :root{--bg:#f8fafc;--card:#fff;--muted:#475569}
+  body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Meiryo,sans-serif;background:var(--bg);padding:24px;color:#0f172a}
+  .wrap{max-width:980px;margin:0 auto;display:grid;gap:18px}
+  h1{font-size:1.2rem;margin-bottom:6px}
+  .sample{background:var(--card);border-radius:12px;padding:16px;border:1px solid rgba(15,23,42,0.06)}
+  .title{font-weight:700;margin-bottom:10px;color:var(--muted)}
+  .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .primary{display:flex;gap:12px;margin-bottom:12px}
+  .btn-large{padding:18px 28px;border-radius:12px;font-weight:700;border:0;cursor:pointer}
+  .small-grid{display:grid;grid-template-columns:repeat(3,64px);gap:10px}
+  .btn-small{width:64px;height:64px;border-radius:999px;border:0;display:inline-flex;align-items:center;justify-content:center;font-weight:700;cursor:pointer}
+  .label{font-size:0.85rem;color:var(--muted);margin-bottom:8px}
+  /* Scheme 1 - Professional Blue */
+  .s1 .primary .in{background:linear-gradient(160deg,#2563eb,#1e40af);color:#fff}
+  .s1 .primary .out{background:linear-gradient(160deg,#0284c7,#075985);color:#fff}
+  .s1 .btn-outing{background:linear-gradient(160deg,#f59e0b,#d97706);color:#fff}
+  .s1 .btn-direct{background:linear-gradient(160deg,#06b6d4,#0ea5a4);color:#fff}
+  .s1 .btn-return{background:linear-gradient(160deg,#10b981,#047857);color:#fff}
+  .s1 .btn-home{background:linear-gradient(160deg,#ef4444,#991b1b);color:#fff}
+  .s1 .btn-wfh{background:linear-gradient(160deg,#06b6d4,#1e3a8a);color:#fff}
+  .s1 .btn-leave{background:linear-gradient(160deg,#8b5cf6,#6d28d9);color:#fff}
+  .s1 .btn-am{background:linear-gradient(160deg,#f97316,#fb923c);color:#fff}
+  .s1 .btn-pm{background:linear-gradient(160deg,#ef4444,#fb7185);color:#fff}
+
+  /* Scheme 2 - Soft Pastel */
+  .s2 .primary .in{background:linear-gradient(160deg,#93c5fd,#60a5fa);color:#0f172a}
+  .s2 .primary .out{background:linear-gradient(160deg,#a5f3fc,#67e8f9);color:#0f172a}
+  .s2 .btn-outing{background:#ffd580;color:#0f172a}
+  .s2 .btn-direct{background:#a5f3fc;color:#0f172a}
+  .s2 .btn-return{background:#bbf7d0;color:#0f172a}
+  .s2 .btn-home{background:#fecaca;color:#0f172a}
+  .s2 .btn-wfh{background:#c7f9d2;color:#0f172a}
+  .s2 .btn-leave{background:#e9d5ff;color:#0f172a}
+  .s2 .btn-am{background:#ffe8cc;color:#0f172a}
+  .s2 .btn-pm{background:#ffd7e2;color:#0f172a}
+
+  /* Scheme 3 - High Contrast */
+  .s3 .primary .in{background:#0b63d3;color:#fff}
+  .s3 .primary .out{background:#0b63d3;color:#fff}
+  .s3 .btn-outing{background:#ff8a00;color:#000}
+  .s3 .btn-direct{background:#00b7c2;color:#000}
+  .s3 .btn-return{background:#00a85a;color:#fff}
+  .s3 .btn-home{background:#d7263d;color:#fff}
+  .s3 .btn-wfh{background:#0077b6;color:#fff}
+  .s3 .btn-leave{background:#6a1b9a;color:#fff}
+  .s3 .btn-am{background:#ff7a00;color:#000}
+  .s3 .btn-pm{background:#e53935;color:#fff}
+
+  /* small label under circular buttons */
+  .small-caption{font-size:0.72rem;color:var(--muted);text-align:center;margin-top:6px}
+  footer{margin-top:18px;font-size:0.85rem;color:var(--muted)}
+  /* Additional proposals A-D */
+  /* Proposal A - Professional (variant) */
+  .a .primary .in{background:linear-gradient(160deg,#2563eb,#1e40af);color:#fff}
+  .a .primary .out{background:linear-gradient(160deg,#0ea5a4,#037f6b);color:#fff}
+  .a .btn-outing{background:#f59e0b;color:#fff}
+  .a .btn-direct{background:#06b6d4;color:#fff}
+  .a .btn-return{background:#10b981;color:#fff}
+  .a .btn-home{background:#ef4444;color:#fff}
+  .a .btn-wfh{background:#06b6d4;color:#fff}
+  .a .btn-leave{background:#8b5cf6;color:#fff}
+  .a .btn-am{background:#f97316;color:#fff}
+  .a .btn-pm{background:#ef4444;color:#fff}
+
+  /* Proposal B - Clear color-coded */
+  .b .primary .in{background:#0b63d3;color:#fff}
+  .b .primary .out{background:#d7263d;color:#fff}
+  .b .btn-outing{background:#ff8a00;color:#000}
+  .b .btn-direct{background:#00b7c2;color:#000}
+  .b .btn-return{background:#00a85a;color:#fff}
+  .b .btn-home{background:#9b1b2f;color:#fff}
+  .b .btn-wfh{background:#0077b6;color:#fff}
+  .b .btn-leave{background:#6a1b9a;color:#fff}
+  .b .btn-am{background:#ff7a00;color:#000}
+  .b .btn-pm{background:#e53935;color:#fff}
+
+  /* Proposal C - Gentle pastel */
+  .c .primary .in{background:linear-gradient(160deg,#60a5fa,#3b82f6);color:#07203b}
+  .c .primary .out{background:#334155;color:#fff}
+  .c .btn-outing{background:#ffd580;color:#07203b}
+  .c .btn-direct{background:#a5f3fc;color:#07203b}
+  .c .btn-return{background:#bbf7d0;color:#07203b}
+  .c .btn-home{background:#fecaca;color:#07203b}
+  .c .btn-wfh{background:#c7f9d2;color:#07203b}
+  .c .btn-leave{background:#e9d5ff;color:#07203b}
+  .c .btn-am{background:#ffe8cc;color:#07203b}
+  .c .btn-pm{background:#ffd7e2;color:#07203b}
+
+  /* Proposal D - Maximum contrast */
+  .d .primary .in{background:#003f8a;color:#fff}
+  .d .primary .out{background:#8b0000;color:#fff}
+  .d .btn-outing{background:#ffb000;color:#000}
+  .d .btn-direct{background:#00a8a8;color:#000}
+  .d .btn-return{background:#009e60;color:#fff}
+  .d .btn-home{background:#6a1b9a;color:#fff}
+  .d .btn-wfh{background:#005f99;color:#fff}
+  .d .btn-leave{background:#6a1b9a;color:#fff}
+  .d .btn-am{background:#ff7a00;color:#000}
+  .d .btn-pm{background:#e53935;color:#fff}
+
+  /* --- 統一パレット適用: 各サンプルで変数を定義し、ボタンは共通のマッピングで色を参照します --- */
+  .sample { --primary: #2563eb; --secondary: #0284c7; --warning: #f59e0b; --info: #06b6d4; --success:#10b981; --danger:#ef4444; --accent:#8b5cf6; --on-primary:#fff; --on-secondary:#fff; --on-warning:#000; --on-info:#fff; --on-success:#fff; --on-danger:#fff; --on-accent:#fff; }
+
+  /* 共通のマッピング（後述の各案で変数を書き換え） */
+  .sample .primary .in { background: var(--primary); color: var(--on-primary); }
+  .sample .primary .out { background: var(--secondary); color: var(--on-secondary); }
+  .sample .btn-outing { background: var(--warning); color: var(--on-warning); }
+  .sample .btn-direct { background: var(--info); color: var(--on-info); }
+  .sample .btn-return { background: var(--success); color: var(--on-success); }
+  .sample .btn-home { background: var(--danger); color: var(--on-danger); }
+  .sample .btn-wfh { background: var(--info); color: var(--on-info); }
+  .sample .btn-leave { background: var(--accent); color: var(--on-accent); }
+  .sample .btn-am { background: var(--warning); color: var(--on-warning); }
+  .sample .btn-pm { background: var(--danger); color: var(--on-danger); }
+
+  /* 各案のパレットを上書きして統一感を出す */
+  .s1 { --primary: linear-gradient(160deg,#2563eb,#1e40af); --secondary: linear-gradient(160deg,#0284c7,#075985); --warning: linear-gradient(160deg,#f59e0b,#d97706); --info: linear-gradient(160deg,#06b6d4,#0ea5a4); --success: linear-gradient(160deg,#10b981,#047857); --danger: linear-gradient(160deg,#ef4444,#991b1b); --accent: linear-gradient(160deg,#8b5cf6,#6d28d9); --on-primary:#fff; --on-secondary:#fff; --on-warning:#fff; --on-info:#fff; --on-success:#fff; --on-danger:#fff; --on-accent:#fff; }
+  .s2 { --primary: linear-gradient(160deg,#93c5fd,#60a5fa); --secondary: linear-gradient(160deg,#a5f3fc,#67e8f9); --warning:#ffd580; --info:#a5f3fc; --success:#bbf7d0; --danger:#fecaca; --accent:#e9d5ff; --on-primary:#07203b; --on-secondary:#07203b; --on-warning:#07203b; --on-info:#07203b; --on-success:#07203b; --on-danger:#07203b; --on-accent:#07203b; }
+  .s3 { --primary:#0b63d3; --secondary:#0b63d3; --warning:#ff8a00; --info:#00b7c2; --success:#00a85a; --danger:#d7263d; --accent:#6a1b9a; --on-primary:#fff; --on-secondary:#fff; --on-warning:#000; --on-info:#000; --on-success:#fff; --on-danger:#fff; --on-accent:#fff; }
+
+  .a { --primary: linear-gradient(160deg,#2563eb,#1e40af); --secondary: linear-gradient(160deg,#0ea5a4,#037f6b); --warning:#f59e0b; --info:#06b6d4; --success:#10b981; --danger:#ef4444; --accent:#8b5cf6; --on-primary:#fff; --on-secondary:#fff; --on-warning:#fff; --on-info:#fff; --on-success:#fff; --on-danger:#fff; --on-accent:#fff; }
+  .b { --primary:#0b63d3; --secondary:#d7263d; --warning:#ff8a00; --info:#00b7c2; --success:#00a85a; --danger:#9b1b2f; --accent:#6a1b9a; --on-primary:#fff; --on-secondary:#fff; --on-warning:#000; --on-info:#000; --on-success:#fff; --on-danger:#fff; --on-accent:#fff; }
+  .c { --primary: linear-gradient(160deg,#60a5fa,#3b82f6); --secondary:#334155; --warning:#ffd580; --info:#a5f3fc; --success:#bbf7d0; --danger:#fecaca; --accent:#e9d5ff; --on-primary:#07203b; --on-secondary:#fff; --on-warning:#07203b; --on-info:#07203b; --on-success:#07203b; --on-danger:#07203b; --on-accent:#07203b; }
+  .d { --primary:#003f8a; --secondary:#8b0000; --warning:#ffb000; --info:#00a8a8; --success:#009e60; --danger:#6a1b9a; --accent:#6a1b9a; --on-primary:#fff; --on-secondary:#fff; --on-warning:#000; --on-info:#000; --on-success:#fff; --on-danger:#fff; --on-accent:#fff; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>配色比較サンプル</h1>
+    <p class="label">出勤/退勤は大ボタン、その他は小丸ボタンのレイアウトで各配色を比較できます。</p>
+
+    <div class="sample s1">
+      <div class="title">案1 — プロフェッショナル・ブルー</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <div class="sample s2">
+      <div class="title">案2 — ソフト・パステル</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <div class="sample s3">
+      <div class="title">案3 — ハイコントラスト</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <div class="sample a">
+      <div class="title">案A — Professional（variant）</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <div class="sample b">
+      <div class="title">案B — 色分けはっきり</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <div class="sample c">
+      <div class="title">案C — 穏やかパステル</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <div class="sample d">
+      <div class="title">案D — 最大コントラスト</div>
+      <div class="primary">
+        <button class="btn-large in">出勤</button>
+        <button class="btn-large out">退勤</button>
+      </div>
+      <div class="small-grid">
+        <button class="btn-small btn-outing">外出</button>
+        <button class="btn-small btn-direct">直行</button>
+        <button class="btn-small btn-return">帰社</button>
+        <button class="btn-small btn-home">直帰</button>
+        <button class="btn-small btn-wfh">在宅</button>
+        <button class="btn-small btn-leave">休暇</button>
+        <button class="btn-small btn-am">AM</button>
+        <button class="btn-small btn-pm">PM</button>
+      </div>
+    </div>
+
+    <footer>このファイルは比較用サンプルです。気に入った案を選んでください。</footer>
+  </div>
+</body>
+</html>

@@ -11,19 +11,32 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <title>打刻アプリ</title>
+  <!-- Bootstrap Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
 <style>
   :root {
     --bg: #dbeafe;
     --card: #ffffff;
     --card-soft: #dbeafe;
     --text: #0f172a;
-    --muted: #475569;
-    --accent: #1d4ed8;
-    --in: #2563eb;
-    --in-dark: #1e40af;
-    --out: #0284c7;
-    --out-dark: #075985;
-    --border: #93c5fd;
+    --muted: #64748b; /* image-like muted gray */
+    /* Palette (from mockup image) */
+    --in: #2563EB;        /* primary blue */
+    --in-dark: #1D4ED8;   /* darker blue */
+    --out: #F59E0B;       /* orange */
+    --out-dark: #EA580C;  /* darker orange */
+
+    --gaishutsu: #2563EB;
+    --kisha:#F59E0B;
+    --tyokko: #2563EB;
+    --tyokki:#F59E0B;
+    --kyuka: #22D29A;
+    --zaitaku: #FE7BBA;
+    
+    --success: #FE7BBA;   /* 帰社 */
+    --accent: #8B5CF6;    /* purple */
+    --muted-2: #64748B;
+    --border: rgba(15,23,42,0.06);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -48,6 +61,7 @@
     font-size: 1.4rem;
     font-weight: 700;
     letter-spacing: 0.04em;
+    display: flex; align-items: center; gap: 10px; justify-content: center;
   }
   header p {
     color: var(--muted);
@@ -58,10 +72,10 @@
   .clock-card {
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px 24px;
+    border-radius: 24px;
+    padding: 32px 26px;
     text-align: center;
-    box-shadow: 0 14px 34px rgba(29, 78, 216, 0.22);
+    box-shadow: 0 18px 40px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.6);
     min-width: 0;
   }
   .date { color: var(--muted); font-size: 1rem; }
@@ -85,7 +99,7 @@
   }
   .status .dot {
     width: 9px; height: 9px; border-radius: 50%;
-    background: var(--muted);
+    background: var(--muted-2);
   } 
   .status.working { color: var(--in); }
   .status.working .dot { background: var(--in); box-shadow: 0 0 8px var(--in); }
@@ -102,9 +116,56 @@
   }
   .buttons .primary {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 12px;
   }
+  .row-main { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+  /* 小ボタン群はフレックスレイアウトで4列に見せる */
+  .row-secondary { display: flex; flex-wrap: wrap; gap: 8px; }
+  /* 小さい丸いボタン：正方形にして中央揃え */
+  .punch.small {
+    /* compact rectangular white button with left icon badge */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    font-size: 1.05rem; /* ボタンタイトルを少し大きく表示 */
+    border-radius: 12px;
+    padding: 10px 12px 10px 6px; /* 左側の余白を小さくしてアイコンを左寄せに見せる */
+    box-sizing: border-box;
+    /* four per row: calc 25% minus gaps (3 gaps of 8px total) */
+    flex: 0 0 calc((100% - 3*8px) / 4);
+    min-width: 0;
+    max-width: 220px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--muted-2);
+    box-shadow: 0 6px 18px rgba(15,23,42,0.05);
+  }
+  .punch.small .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 40px; }
+  /* アウト用のカスタム画像を表示する場合の調整 */
+  .punch.small .icon-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+  /* icon color classes to match the mockup palette */
+  .icon-circle.in { background: linear-gradient(160deg, var(--tyokko), var(--tyokko)); }
+  .icon-circle.out { background: linear-gradient(160deg, var(--gaishutsu), var(--gaishutsu)); }
+  .icon-circle.success { background: linear-gradient(160deg, var(--kisha), var(--kisha)); }
+  .icon-circle.danger { background: linear-gradient(160deg, var(--tyokki), var(--tyokki)); }
+  .icon-circle.info { background: linear-gradient(160deg, var(--zaitaku), var(--zaitaku)); }
+  .icon-circle.accent { background: linear-gradient(160deg, var(--kyuka), var(--kyuka)); }
+  
+  /* 小ボタンにアイコンと同色の2pxボーダーを付与（data-color 属性で指定） */
+  button.punch.small[data-color="tyokko"] { border: 2px solid var(--tyokko); }
+  button.punch.small[data-color="gaishutsu"] { border: 2px solid var(--gaishutsu); }
+  button.punch.small[data-color="kisha"] { border: 2px solid var(--kisha); }
+  button.punch.small[data-color="tyokki"] { border: 2px solid var(--tyokki); }
+  button.punch.small[data-color="zaitaku"] { border: 2px solid var(--zaitaku); }
+  button.punch.small[data-color="kyuka"] { border: 2px solid var(--kyuka); }
+  
+  .punch.small .icon-circle .bi { color: #fff; font-size: 1.05rem; }
+  .punch.small .sub { font-size: 0.65rem; opacity: 0.8; margin-top: 2px; display: block; }
+  .punch.small .sub { display: none; }
+  /* テキストが長い場合は改行して収める */
+  .punch.small { white-space: normal; overflow-wrap: anywhere; }
   /* 出勤/退勤下のセパレータ */
   .buttons .primary .separator {
     grid-column: 1 / -1;
@@ -131,22 +192,50 @@
     width: 100%;
     box-sizing: border-box;
   }
+  /* 出勤/退勤は大きめ、その他は .punch.small で上書き */
+  .punch.in, .punch.out { padding: 40px 20px; font-size: 1.5rem; }
+  /* Neo Work: ボタン色の統一マッピング */
+  .primary .in { background: linear-gradient(160deg, var(--in), var(--in-dark)); color: #fff; box-shadow: 0 10px 30px rgba(37,99,235,0.18); }
+  .primary .out { background: linear-gradient(160deg, var(--out), var(--out-dark)); color: #fff; box-shadow: 0 10px 30px rgba(245,158,11,0.18); }
+  /* 非.small ボタンは data-color 属性で色指定を行う（各ボタン名に沿った変数を使用） */
+  button.punch:not(.small)[data-color="in"] { background: linear-gradient(160deg, var(--in), var(--in-dark)); color: #fff; box-shadow: 0 10px 30px rgba(37,99,235,0.18); }
+  button.punch:not(.small)[data-color="out"] { background: linear-gradient(160deg, var(--out), var(--out-dark)); color: #fff; box-shadow: 0 10px 30px rgba(245,158,11,0.18); }
+  button.punch:not(.small)[data-color="success"] { background: linear-gradient(160deg, var(--success), #047857); color: #fff; }
+  button.punch:not(.small)[data-color="directhome"] { background: linear-gradient(160deg, #ef4444, #991b1b); color: #fff; }
+  button.punch:not(.small)[data-color="leave"] { background: linear-gradient(160deg, var(--accent), #6d28d9); color: #fff; }
+  button.punch:not(.small)[data-color="leaveAM"] { background: linear-gradient(160deg, #f97316, #fb923c); color: #fff; }
+  button.punch:not(.small)[data-color="leavePM"] { background: linear-gradient(160deg, #ef4444, #fb7185); color: #fff; }
+  button.punch:not(.small)[data-color="wfh"] { background: linear-gradient(160deg, #06b6d4, #1e3a8a); color: #fff; }
   /* ラベルが改行されないようにする（狭い画面ではオーバーフローを防ぐため上書きします） */
   button.punch { white-space: nowrap; }
   button.punch .sub { display: block; font-size: 0.66rem; font-weight: 500; opacity: 0.85; margin-top: 4px; letter-spacing: 0.05em; }
-  button.in  { background: linear-gradient(160deg, var(--in), var(--in-dark)); }
+  /* icon inside buttons */
+  .punch .bi { font-size: 1.0rem; margin-right: 8px; vertical-align: middle; }
+  /* small buttons: icon smaller and above label when space allows */
+  .punch.small .bi { font-size: 1rem; margin-right: 0; }
+  
   button.brk { background: linear-gradient(160deg, #6366f1, #4338ca); }
   button.out { background: linear-gradient(160deg, var(--out), var(--out-dark)); }
-  /* 追加ボタン色 */
-  #btnOuting { background: linear-gradient(160deg, #f59e0b, #d97706); }
-  #btnReturn { background: linear-gradient(160deg, #10b981, #047857); }
-  #btnDirectGo { background: linear-gradient(160deg, #06b6d4, #0ea5a4); }
-  #btnDirectHome { background: linear-gradient(160deg, #ef4444, #991b1b); }
-  #btnLeave { background: linear-gradient(160deg, #8b5cf6, #6d28d9); }
-  #btnLeaveAM { background: linear-gradient(160deg, #f97316, #fb923c); }
-  #btnLeavePM { background: linear-gradient(160deg, #ef4444, #fb7185); }
-  #btnWFH { background: linear-gradient(160deg, #06b6d4, #1e3a8a); }
-  button.punch:active:not(:disabled) { transform: scale(0.97); }
+    /* 追加ボタン色（モックに近い配色）: data-color 属性で指定 */
+    button.punch:not(.small)[data-color="out"] { background: linear-gradient(160deg, var(--out), var(--out-dark)); color: #fff; }
+    button.punch:not(.small)[data-color="success"] { background: linear-gradient(160deg, var(--success), #047857); color: #fff; }
+    button.punch:not(.small)[data-color="in"] { background: linear-gradient(160deg, var(--in), var(--in-dark)); color: #fff; }
+    button.punch:not(.small)[data-color="directhome"] { background: linear-gradient(160deg, #ef4444, #991b1b); color: #fff; }
+    button.punch:not(.small)[data-color="leave"] { background: linear-gradient(160deg, var(--accent), #6d28d9); color: #fff; }
+    button.punch:not(.small)[data-color="leaveAM"] { background: linear-gradient(160deg, #f97316, #fb923c); color: #fff; }
+    button.punch:not(.small)[data-color="leavePM"] { background: linear-gradient(160deg, #ef4444, #fb7185); color: #fff; }
+    button.punch:not(.small)[data-color="wfh"] { background: linear-gradient(160deg, #06b6d4, #1e3a8a); color: #fff; }
+
+    /* 小ボタンは白背景にアイコンだけカラーリング（.icon-circle に色が付くので不要だが互換性保持） */
+    button.punch.small[data-color="gaishutsu"] .bi { color: var(--gaishutsu); }
+    button.punch.small[data-color="tyokko"] .bi { color: var(--tyokko); }
+    button.punch.small[data-color="kisha"] .bi { color: var(--kisha); }
+    button.punch.small[data-color="tyokki"] .bi { color: var(--tyokki); }
+    button.punch.small[data-color="zaitaku"] .bi { color: var(--zaitaku); }
+    button.punch.small[data-color="kyuka"] .bi { color: var(--kyuka); }
+  /* ホバーとアクティブの共通挙動（Neo Work） */
+  button.punch:hover, .btn-large:hover, .btn-small:hover { filter: brightness(0.97); transform: translateY(-1px); }
+  button.punch:active:not(:disabled), .btn-large:active:not(:disabled), .btn-small:active:not(:disabled) { transform: scale(0.97); }
   button.punch:disabled { opacity: 0.32; cursor: not-allowed; filter: grayscale(0.4); }
 
   .today {
@@ -180,6 +269,10 @@
   .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
   .modal-btn { padding: 8px 12px; border-radius: 10px; border: 1px solid var(--border); background: #fff; cursor: pointer; }
   .modal-btn.primary { background: linear-gradient(160deg, var(--in), var(--in-dark)); color: #fff; border: none; }
+  /* 在宅/休暇モーダルの選択ボタンをフレックスで均等配置 */
+  #leaveOptions { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
+  #leaveOptions .modal-btn { flex: 1 1 0; min-width: 0; text-align: center; padding: 10px 12px; }
+  #leaveOptions .modal-btn + .modal-btn { margin-left: 0; }
 
   .history {
     margin-top: 26px;
@@ -261,7 +354,22 @@
       overflow-wrap: break-word;
       word-break: break-word;
     }
-    button.punch .sub { font-size: 0.62rem; margin-top: 6px; }
+    /* スマホでは小ボタンを縦並びにしてアイコンとラベルを中央揃えにする */
+    .punch.small {
+      aspect-ratio: 1 / 1;
+      padding: 8px 6px;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 6px;
+      
+    }
+    .punch.small .icon-circle { margin-bottom: 0; }
+    .punch.small > span { display: block; }
+    button.punch .sub { font-size: 0.62rem; margin-top: 6px; display: block; }
   }
   /* 中程度の幅でもはみ出す問題に備え、より広めの閾値で調整 */
   @media (max-width: 520px) {
@@ -295,21 +403,40 @@
 
       <div class="buttons">
         <div class="primary">
-          <button class="punch in" id="btnIn">出勤<span class="sub">CLOCK IN</span></button>
-          <button class="punch out" id="btnOut">退勤<span class="sub">CLOCK OUT</span></button>
+          <div class="row-main">
+            <button class="punch in" id="btnIn" data-color="in"><i class="bi bi-clock-fill" aria-hidden="true"></i>出勤<span class="sub">CLOCK IN</span></button>
+            <button class="punch out" id="btnOut" data-color="out"><i class="bi bi-box-arrow-right" aria-hidden="true"></i>退勤<span class="sub">CLOCK OUT</span></button>
+          </div>
+
           <div class="separator" aria-hidden="true"></div>
 
-          <button class="punch" id="btnOuting">外出<span class="sub">GO OUT</span></button>
-          <button class="punch" id="btnDirectGo">直行<span class="sub">DIRECT GO</span></button>
-
-          <button class="punch" id="btnReturn">帰社<span class="sub">RETURN</span></button>
-          <button class="punch" id="btnDirectHome">直帰<span class="sub">DIRECT HOME</span></button>
-
-          <button class="punch" id="btnWFH">在宅<span class="sub">WFH</span></button>
-          <button class="punch" id="btnLeave">休暇<span class="sub">LEAVE</span></button>
-
-          <button class="punch" id="btnLeaveAM">AM休暇<span class="sub">AM LEAVE</span></button>
-          <button class="punch" id="btnLeavePM">PM休暇<span class="sub">PM LEAVE</span></button>
+          <div class="row-secondary">
+            <button class="punch small" id="btnOuting" data-color="gaishutsu"><span class="icon-circle "><img src="Designer.svg" alt="外出"></span><span>外出<span class="sub">GO OUT</span></span></button>
+            <button class="punch small" id="btnDirectGo" data-color="tyokko"><span class="icon-circle "><i class="bi bi-arrow-up-right-circle" aria-hidden="true"></i></span><span>直行<span class="sub">DIRECT GO</span></span></button>
+            <button class="punch small" id="btnReturn" data-color="kisha"><span class="icon-circle "><i class="bi bi-door-closed-fill" aria-hidden="true"></i></span><span>帰社<span class="sub">RETURN</span></span></button>
+            <button class="punch small" id="btnDirectHome" data-color="tyokki"><span class="icon-circle "><i class="bi bi-arrow-down-right-circle" aria-hidden="true"></i></span><span>直帰<span class="sub">DIRECT HOME</span></span></button>
+            <button class="punch small" id="btnWFH" data-color="zaitaku"><span class="icon-circle "><i class="bi bi-pc-display-horizontal" aria-hidden="true"></i></span><span>在宅<span class="sub">WFH</span></span></button>
+            <button class="punch small" id="btnLeave" data-color="kyuka"><span class="icon-circle "><i class="bi bi-house" aria-hidden="true"></i></span><span>休暇<span class="sub">LEAVE</span></span></button>
+          </div>
+        </div>
+      </div>
+      <!-- 在宅／休暇選択モーダル -->
+      <div class="modal-overlay" id="leaveModal" hidden>
+        <div class="modal-box">
+          <h3 id="leaveTitle">選択</h3>
+          <div class="modal-row" id="leaveOptions">
+            <button class="modal-btn" data-val="終日">終日</button>
+            <button class="modal-btn" data-val="午前">午前</button>
+            <button class="modal-btn" data-val="午後">午後</button>
+          </div>
+          <div class="modal-row">
+            <label for="leaveRemark">備考</label>
+            <textarea id="leaveRemark" rows="2" placeholder="備考（自動入力可）"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="modal-btn" id="leaveCancel">キャンセル</button>
+            <button class="modal-btn primary" id="leaveConfirm">保存</button>
+          </div>
         </div>
       </div>
       <!-- 予定入力モーダル -->
@@ -357,6 +484,7 @@
     <div class="auth-settings">
       <button class="auth-btn" id="btnAuthSetup" hidden>🔐 指紋認証を有効にする</button>
       <button class="auth-btn danger" id="btnAuthRemove" hidden>指紋認証を無効にする</button>
+      <button class="auth-btn" id="btnInstall" hidden>⬇️ インストール</button>
       <p class="auth-note" id="authNote" hidden>指紋認証はHTTPS (または localhost) でのみ利用できます。</p>
     </div>
 
@@ -490,8 +618,35 @@
     lockError: document.getElementById("lockError"),
     btnAuthSetup: document.getElementById("btnAuthSetup"),
     btnAuthRemove: document.getElementById("btnAuthRemove"),
+    btnInstall: document.getElementById("btnInstall"),
     authNote: document.getElementById("authNote"),
   };
+
+  // ---- PWA Install handling ----
+  let deferredPrompt = null;
+  // beforeinstallprompt を監視してインストールボタンを表示
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (el.btnInstall) el.btnInstall.hidden = false;
+  });
+  // インストールボタン押下時にプロンプトを表示
+  if (el.btnInstall) el.btnInstall.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    if (choice && choice.outcome) {
+      console.log('PWA install choice:', choice.outcome);
+    }
+    deferredPrompt = null;
+    el.btnInstall.hidden = true;
+  });
+  // インストール完了イベント
+  window.addEventListener('appinstalled', () => {
+    console.log('PWA was installed');
+    if (el.btnInstall) el.btnInstall.hidden = true;
+    try { alert('アプリがインストールされました'); } catch (e) {}
+  });
 
   // ---- 描画 ----
   function todayRecord() {
@@ -551,10 +706,14 @@
     // 退勤は「最新の出勤レコード」が存在し休憩中でない限り押下可 (翌日の出勤前は何度でも上書き可)
     const latest = latestRecord();
     const latestOnBreak = latest ? isOnBreak(latest.rec) : false;
+    // ヘルパー（DOM が存在しない場合に備えて安全に操作）
+    function setDisabled(btn, v) { if (btn) btn.disabled = v; }
+    function setHidden(btn, v) { if (btn) btn.hidden = !!v; }
+
     // 基本ボタン制御
     // 出勤ボタンは「出勤済みかつ未退勤」の場合のみ無効にする
-    el.btnIn.disabled = hasIn && !hasOut;
-    el.btnOut.disabled = !latest || latestOnBreak;
+    setDisabled(el.btnIn, hasIn && !hasOut);
+    setDisabled(el.btnOut, !latest || latestOnBreak);
 
     // 新しいボタンの有効/無効制御
     const enabledAfterIn = hasIn && !hasOut;
@@ -564,46 +723,46 @@
 
     // 休憩中は他のボタンをすべて無効化（休憩の開始/終了のみ有効）
     if (onBreak) {
-      el.btnIn.disabled = true;
-      el.btnOut.disabled = true;
+      setDisabled(el.btnIn, true);
+      setDisabled(el.btnOut, true);
       // 休憩中は外出/直行ペアは非表示にする
-      el.btnOuting.disabled = true; el.btnOuting.hidden = true;
-      el.btnReturn.disabled = true; el.btnReturn.hidden = true;
-      el.btnDirectGo.disabled = true; el.btnDirectGo.hidden = true;
-      el.btnDirectHome.disabled = true; el.btnDirectHome.hidden = true;
-      el.btnWFH.disabled = true;
-      el.btnLeave.disabled = true;
-      el.btnLeaveAM.disabled = true;
-      el.btnLeavePM.disabled = true;
+      setDisabled(el.btnOuting, true); setHidden(el.btnOuting, true);
+      setDisabled(el.btnReturn, true); setHidden(el.btnReturn, true);
+      setDisabled(el.btnDirectGo, true); setHidden(el.btnDirectGo, true);
+      setDisabled(el.btnDirectHome, true); setHidden(el.btnDirectHome, true);
+      setDisabled(el.btnWFH, true);
+      setDisabled(el.btnLeave, true);
+      setDisabled(el.btnLeaveAM, true);
+      setDisabled(el.btnLeavePM, true);
     } else {
       // 通常時の振る舞い
       // 外出/帰社は一つのボタンのように振る舞う（片方を表示、片方を非表示）
       if (!enabledAfterIn) {
-        el.btnOuting.hidden = true; el.btnReturn.hidden = true;
+        setHidden(el.btnOuting, true); setHidden(el.btnReturn, true);
       } else if (outingActive) {
-        el.btnOuting.hidden = true; el.btnReturn.hidden = false;
-        el.btnOuting.disabled = true; el.btnReturn.disabled = false;
+        setHidden(el.btnOuting, true); setHidden(el.btnReturn, false);
+        setDisabled(el.btnOuting, true); setDisabled(el.btnReturn, false);
       } else {
-        el.btnOuting.hidden = false; el.btnReturn.hidden = true;
-        el.btnOuting.disabled = false; el.btnReturn.disabled = true;
+        setHidden(el.btnOuting, false); setHidden(el.btnReturn, true);
+        setDisabled(el.btnOuting, false); setDisabled(el.btnReturn, true);
       }
       // 直行/直帰も同様
       if (!enabledAfterIn) {
-        el.btnDirectGo.hidden = true; el.btnDirectHome.hidden = true;
+        setHidden(el.btnDirectGo, true); setHidden(el.btnDirectHome, true);
       } else if (directActive) {
-        el.btnDirectGo.hidden = true; el.btnDirectHome.hidden = false;
-        el.btnDirectGo.disabled = true; el.btnDirectHome.disabled = false;
+        setHidden(el.btnDirectGo, true); setHidden(el.btnDirectHome, false);
+        setDisabled(el.btnDirectGo, true); setDisabled(el.btnDirectHome, false);
       } else {
-        el.btnDirectGo.hidden = false; el.btnDirectHome.hidden = true;
-        el.btnDirectGo.disabled = false; el.btnDirectHome.disabled = true;
+        setHidden(el.btnDirectGo, false); setHidden(el.btnDirectHome, true);
+        setDisabled(el.btnDirectGo, false); setDisabled(el.btnDirectHome, true);
       }
-      el.btnWFH.disabled = !enabledAfterIn;
+      setDisabled(el.btnWFH, !enabledAfterIn);
       // 休暇系は「退勤後」または「未出勤（記録なし）」で有効にする
       // （出勤済みで未退勤の時は無効）
       const leaveEnabled = hasOut || (!hasIn && !hasOut);
-      el.btnLeave.disabled = !leaveEnabled;
-      el.btnLeaveAM.disabled = !leaveEnabled;
-      el.btnLeavePM.disabled = !leaveEnabled;
+      setDisabled(el.btnLeave, !leaveEnabled);
+      setDisabled(el.btnLeaveAM, !leaveEnabled);
+      setDisabled(el.btnLeavePM, !leaveEnabled);
     }
     // 休憩ボタンは非表示のためラベル更新処理は削除
 
@@ -835,8 +994,8 @@
     }
   }
 
-  el.btnIn.addEventListener("click", clockIn);
-  el.btnOut.addEventListener("click", clockOut);
+  if (el.btnIn) el.btnIn.addEventListener("click", clockIn);
+  if (el.btnOut) el.btnOut.addEventListener("click", clockOut);
   // 'その他' パネルは全て表示する仕様にしたため、関連する DOM 操作は不要
   // 新ボタンはとりあえず簡易な記録アクション (タグを履歴に残す)
   function addTag(tag) {
@@ -847,8 +1006,30 @@
     save(records);
     renderState();
   }
+  
+  // API 呼び出し: updateZaiseki
+  async function sendUpdateZaiseki(item) {
+    const url = "http://192.168.103.226/~imadoko/api/Gaishutsujoho/updateZaiseki/";
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Basic c2VydmljZTpwQHNzdzByZA=="
+        },
+        body: JSON.stringify({ data: item })
+      });
+      if (!res.ok) {
+        console.warn("updateZaiseki failed", res.status, await res.text());
+      } else {
+        console.log("updateZaiseki success");
+      }
+    } catch (e) {
+      console.warn("updateZaiseki error", e);
+    }
+  }
   // 外出/帰社と直行/直帰はトグルとして扱う
-  el.btnOuting.addEventListener("click", () => {
+  if (el.btnOuting) el.btnOuting.addEventListener("click", () => {
     const key = dateKey(new Date());
     if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [], outing: false, direct: false };
     // 開始時に予定入力モーダルを表示して、保存時に記録する
@@ -861,9 +1042,30 @@
       addTag("外出");
       save(records);
       renderState();
+      // API 送信
+      const item = {
+        shain_code: "XXXXX",
+        zaiseki_kubun: "02",
+        biko: remark || "",
+        uwagaki_kengen_kubun: "1",
+        yobi_komoku_2: date ? date.replace(/-/g, "") : "",
+        modori_jikoku: time ? time.replace(":", "") : "",
+        yobi_komoku_1: "0",
+        yobi_komoku_3: "Web_MapQuery",
+        yobi_komoku_4: "",
+        yobi_komoku_5: "",
+        yobi_komoku_6: "",
+        yobi_komoku_7: "",
+        yobi_komoku_8: "",
+        yobi_komoku_9: "",
+        yobi_komoku_10: "",
+        koshin_user_id: "XXXXX",
+        toroku_user_id: "XXXXX"
+      };
+      sendUpdateZaiseki(item);
     });
   });
-  el.btnReturn.addEventListener("click", () => {
+  if (el.btnReturn) el.btnReturn.addEventListener("click", () => {
     const key = dateKey(new Date());
     if (!records[key]) return;
     // 帰社時は外出/直行の両フラグをクリアしておく
@@ -873,8 +1075,29 @@
     addTag("帰社");
     save(records);
     renderState();
+    // API 送信: 帰社は在席に戻った扱い (01)
+    const item = {
+      shain_code: "XXXXX",
+      zaiseki_kubun: "01",
+      biko: records[key].remark || "",
+      uwagaki_kengen_kubun: "1",
+      yobi_komoku_2: "",
+      modori_jikoku: "",
+      yobi_komoku_1: "0",
+      yobi_komoku_3: "Web_MapQuery",
+      yobi_komoku_4: "",
+      yobi_komoku_5: "",
+      yobi_komoku_6: "",
+      yobi_komoku_7: "",
+      yobi_komoku_8: "",
+      yobi_komoku_9: "",
+      yobi_komoku_10: "",
+      koshin_user_id: "XXXXX",
+      toroku_user_id: "XXXXX"
+    };
+    sendUpdateZaiseki(item);
   });
-  el.btnDirectGo.addEventListener("click", () => {
+  if (el.btnDirectGo) el.btnDirectGo.addEventListener("click", () => {
     const key = dateKey(new Date());
     if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [], outing: false, direct: false };
     // 直行時も予定入力を求める
@@ -887,9 +1110,30 @@
       addTag("直行");
       save(records);
       renderState();
+      // API 送信: 直行は外出扱い (02)
+      const item = {
+        shain_code: "XXXXX",
+        zaiseki_kubun: "02",
+        biko: remark || "",
+        uwagaki_kengen_kubun: "1",
+        yobi_komoku_2: date ? date.replace(/-/g, "") : "",
+        modori_jikoku: time ? time.replace(":", "") : "",
+        yobi_komoku_1: "0",
+        yobi_komoku_3: "Web_MapQuery",
+        yobi_komoku_4: "",
+        yobi_komoku_5: "",
+        yobi_komoku_6: "",
+        yobi_komoku_7: "",
+        yobi_komoku_8: "",
+        yobi_komoku_9: "",
+        yobi_komoku_10: "",
+        koshin_user_id: "XXXXX",
+        toroku_user_id: "XXXXX"
+      };
+      sendUpdateZaiseki(item);
     });
   });
-  el.btnDirectHome.addEventListener("click", () => {
+  if (el.btnDirectHome) el.btnDirectHome.addEventListener("click", () => {
     const key = dateKey(new Date());
     if (!records[key]) return;
     // 直帰時は両方のフラグをクリア
@@ -899,12 +1143,83 @@
     addTag("直帰");
     save(records);
     renderState();
+    // API 送信: 直帰は外出(直帰) (03)
+    const item = {
+      shain_code: "XXXXX",
+      zaiseki_kubun: "03",
+      biko: records[key].remark || "",
+      uwagaki_kengen_kubun: "1",
+      yobi_komoku_2: "",
+      modori_jikoku: "",
+      yobi_komoku_1: "0",
+      yobi_komoku_3: "Web_MapQuery",
+      yobi_komoku_4: "",
+      yobi_komoku_5: "",
+      yobi_komoku_6: "",
+      yobi_komoku_7: "",
+      yobi_komoku_8: "",
+      yobi_komoku_9: "",
+      yobi_komoku_10: "",
+      koshin_user_id: "XXXXX",
+      toroku_user_id: "XXXXX"
+    };
+    sendUpdateZaiseki(item);
   });
-  el.btnLeave.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = '休暇'; addTag("休暇"); });
-  el.btnLeaveAM.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = 'AM休暇'; addTag("AM休暇"); });
-  el.btnLeavePM.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = 'PM休暇'; addTag("PM休暇"); });
-  el.btnWFH.addEventListener("click", () => { const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] }; records[key].lastAction = '在宅'; addTag("在宅"); });
-  el.btnClear.addEventListener("click", clearAll);
+  if (el.btnLeave) el.btnLeave.addEventListener("click", () => {
+    openLeaveModal('休暇', (remark) => {
+      const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] };
+      records[key].lastAction = '休暇'; records[key].remark = remark || null; addTag("休暇"); save(records); renderState();
+      // API 送信: 休暇 (04)
+      const item = {
+        shain_code: "XXXXX",
+        zaiseki_kubun: "04",
+        biko: remark || "",
+        uwagaki_kengen_kubun: "1",
+        yobi_komoku_2: "",
+        modori_jikoku: "",
+        yobi_komoku_1: "0",
+        yobi_komoku_3: "Web_MapQuery",
+        yobi_komoku_4: "",
+        yobi_komoku_5: "",
+        yobi_komoku_6: "",
+        yobi_komoku_7: "",
+        yobi_komoku_8: "",
+        yobi_komoku_9: "",
+        yobi_komoku_10: "",
+        koshin_user_id: "XXXXX",
+        toroku_user_id: "XXXXX"
+      };
+      sendUpdateZaiseki(item);
+    });
+  });
+  if (el.btnWFH) el.btnWFH.addEventListener("click", () => {
+    openLeaveModal('在宅', (remark) => {
+      const key = dateKey(new Date()); if (!records[key]) records[key] = { in: null, out: null, breaks: [], tags: [] };
+      records[key].lastAction = '在宅'; records[key].remark = remark || null; addTag("在宅"); save(records); renderState();
+      // API 送信: 在宅勤務 (05)
+      const item = {
+        shain_code: "XXXXX",
+        zaiseki_kubun: "05",
+        biko: remark || "",
+        uwagaki_kengen_kubun: "1",
+        yobi_komoku_2: "",
+        modori_jikoku: "",
+        yobi_komoku_1: "0",
+        yobi_komoku_3: "Web_MapQuery",
+        yobi_komoku_4: "",
+        yobi_komoku_5: "",
+        yobi_komoku_6: "",
+        yobi_komoku_7: "",
+        yobi_komoku_8: "",
+        yobi_komoku_9: "",
+        yobi_komoku_10: "",
+        koshin_user_id: "XXXXX",
+        toroku_user_id: "XXXXX"
+      };
+      sendUpdateZaiseki(item);
+    });
+  });
+  if (el.btnClear) el.btnClear.addEventListener("click", clearAll);
   // モーダル操作
   const modal = document.getElementById('returnModal');
   const modalDate = document.getElementById('modalDate');
@@ -914,13 +1229,22 @@
   const modalConfirm = document.getElementById('modalConfirm');
   let modalCallback = null;
 
+  // 在宅/休暇モーダル要素
+  const leaveModal = document.getElementById('leaveModal');
+  const leaveTitle = document.getElementById('leaveTitle');
+  const leaveOptions = document.getElementById('leaveOptions');
+  const leaveRemark = document.getElementById('leaveRemark');
+  const leaveCancel = document.getElementById('leaveCancel');
+  const leaveConfirm = document.getElementById('leaveConfirm');
+  let leaveCallback = null;
+  let leaveActionLabel = null;
+
   function openReturnModal(actionLabel, cb) {
     modalCallback = cb;
     document.getElementById('modalTitle').textContent = actionLabel + ' の戻り予定を入力';
-    // デフォルト値は現在の日時
-    const now = new Date();
-    modalDate.value = now.toISOString().slice(0,10);
-    modalTime.value = now.toTimeString().slice(0,5);
+    // 初期値は空にする
+    modalDate.value = '';
+    modalTime.value = '';
     modalRemark.value = '';
     modal.removeAttribute('hidden');
   }
@@ -929,6 +1253,47 @@
   modalConfirm.addEventListener('click', () => {
     if (modalCallback) modalCallback(modalDate.value, modalTime.value, modalRemark.value);
     closeReturnModal();
+  });
+  // 在宅/休暇モーダル制御
+  function openLeaveModal(actionLabel, cb) {
+    leaveCallback = cb;
+    leaveActionLabel = actionLabel;
+    leaveTitle.textContent = actionLabel + ' を選択';
+    // 初期値: 休暇は「終日休暇」、在宅は「フレックス"
+    if (actionLabel === '休暇') leaveRemark.value = '終日休暇';
+    else if (actionLabel === '在宅') leaveRemark.value = '終日在宅';
+    else leaveRemark.value = actionLabel;
+    leaveModal.removeAttribute('hidden');
+  }
+  function closeLeaveModal() { leaveModal.setAttribute('hidden', ''); leaveCallback = null; }
+  // 選択ボタン
+  leaveOptions.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-val]');
+    if (!btn) return;
+    const val = btn.getAttribute('data-val');
+    // 休暇は「終日休暇/午前休暇/午後休暇」にする
+    if (leaveActionLabel === '休暇') {
+      if (val === '終日') leaveRemark.value = '終日休暇';
+      else if (val === '午前') leaveRemark.value = '午前休暇';
+      else if (val === '午後') leaveRemark.value = '午後休暇';
+      else leaveRemark.value = val + '休暇';
+    } else if (leaveActionLabel === '在宅') {
+      if (val === '終日') leaveRemark.value = '終日在宅';
+      else if (val === '午前') leaveRemark.value = '午前在宅';
+      else if (val === '午後') leaveRemark.value = '午後在宅';
+      else leaveRemark.value = val + '在宅';
+    } else {
+      leaveRemark.value = val;
+    }
+    // 強調表示
+    Array.from(leaveOptions.querySelectorAll('button')).forEach(b => b.classList.remove('primary'));
+    btn.classList.add('primary');
+  });
+  leaveCancel.addEventListener('click', () => closeLeaveModal());
+  leaveConfirm.addEventListener('click', () => {
+    const val = leaveRemark.value || null;
+    if (leaveCallback) leaveCallback(val);
+    closeLeaveModal();
   });
   // ロック画面のどこをタップしても認証を起動 (リセットリンクは除外)
   el.lockOverlay.addEventListener("click", (e) => {
